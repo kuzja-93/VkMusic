@@ -12,8 +12,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private UserActor actor = null;
     private AudioList audioList = null;
     private GetAudioTask mGetAudioTask = null;
+
+    private DBHelper dbHelper;
 
     private View mContentMain;
     private View mProgressView;
@@ -63,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
+        dbHelper = new DBHelper(this);
+
+        actor = dbHelper.getUser();
 
         if (actor == null) {
             login();
@@ -114,8 +124,9 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
             Bundle extras = data.getExtras();
-            actor = new UserActor(extras.getString("user_id"), extras.getString("access_token"),
+            actor = new UserActor(extras.getInt("user_id"), extras.getString("access_token"),
                     extras.getInt("expires_in"));
+            dbHelper.saveUser(actor);
             loadAudioList();
         }
         else {
@@ -141,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_quit) {
             actor = null;
             audioList = null;
+            dbHelper.clear();
             login();
             return true;
         }
@@ -248,6 +260,50 @@ public class MainActivity extends AppCompatActivity {
             holder.titleView.setText(item.getTitle());
 
             return convertView;
+        }
+    }
+
+    class DBHelper extends SQLiteOpenHelper {
+
+        public UserActor getUser() {
+            Cursor c = getWritableDatabase()
+                    .query("user", null, null, null, null, null, null);
+            if (!c.moveToFirst())
+                return null;
+            return new UserActor(c.getInt(c.getColumnIndex("user_id")),
+                    c.getString(c.getColumnIndex("access_token")),
+                    c.getInt(c.getColumnIndex("expires_in")));
+        }
+
+        public void saveUser(UserActor actor) {
+            ContentValues cv = new ContentValues();
+            cv.put("user_id", actor.getUserID());
+            cv.put("access_token", actor.getAccessToken());
+            cv.put("expires_in", actor.getExpiresIn());
+            getWritableDatabase().insert("user", null, cv);
+        }
+
+        public void clear() {
+            getWritableDatabase().delete("user", null, null);
+        }
+
+        public DBHelper(Context context) {
+            super(context, "myDB", null, 1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            Log.d("DBHelper", "--- onCreate database ---");
+            // создаем таблицу с полями
+            db.execSQL("create table user ("
+                    + "user_id integer primary key ,"
+                    + "access_token text,"
+                    + "expires_in integer" + ");");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
         }
     }
 }

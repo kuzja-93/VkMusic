@@ -7,7 +7,7 @@ import java.util.Objects;
 
 public class UserActor implements Serializable {
     @SerializedName("user_id")
-    private String userID;
+    private int userID;
 
     @SerializedName("access_token")
     private String accessToken;
@@ -17,13 +17,13 @@ public class UserActor implements Serializable {
 
     public UserActor() {
     }
-    public UserActor(String userID, String accessToken, int expiresIn) {
+    public UserActor(int userID, String accessToken, int expiresIn) {
         this.userID = userID;
         this.accessToken = accessToken;
         this.expiresIn = expiresIn;
     }
 
-    public String getUserID() {
+    public int getUserID() {
         return userID;
     }
     public String getAccessToken() {

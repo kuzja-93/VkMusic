@@ -15,7 +15,7 @@ public class AudioApi {
     {
         this.version = version;
     }
-    public AudioList get(String ownerId, String accessToken) throws ClientException, ApiException {
+    public AudioList get(int ownerId, String accessToken) throws ClientException, ApiException {
         return new AudioGet(ownerId, accessToken, version).execute();
     }
 }

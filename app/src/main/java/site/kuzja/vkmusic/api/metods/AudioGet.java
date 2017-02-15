@@ -7,7 +7,7 @@ import site.kuzja.vkmusic.api.objects.AudioList;
  */
 
 public class AudioGet extends AbstractApiMethod<AudioList>{
-    public AudioGet(String ownerId, String accessToken, String version) {
+    public AudioGet(int ownerId, String accessToken, String version) {
         super("audio.get", accessToken, version, AudioList.class);
         addParam("owner_id", ownerId);
     }
