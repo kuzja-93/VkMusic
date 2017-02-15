@@ -2,6 +2,9 @@ package site.kuzja.vkmusic.api.metods;
 
 import site.kuzja.vkmusic.api.objects.UserActor;
 
+/**
+ * Прямая авторизация (доступно только разрешенным приложениям)
+ */
 public class DirectAuch extends AbstractMethod<UserActor> {
 
     private static final String AUCH_URL = "https://oauth.vk.com/token";

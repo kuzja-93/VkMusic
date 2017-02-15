@@ -1,7 +1,7 @@
 package site.kuzja.vkmusic.api.exceptions;
 
 /**
- * Created by user on 14.02.17.
+ * Базовое исключение при работе с апи
  */
 public class ApiException extends Exception{
     private String description;

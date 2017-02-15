@@ -17,6 +17,10 @@ import site.kuzja.vkmusic.api.exceptions.ExceptionMapper;
 import site.kuzja.vkmusic.api.transport.HttpTransportClient;
 import site.kuzja.vkmusic.api.objects.Error;
 
+/**
+ * Класс для выполнения запросов к серверу vk
+ * @param <U> - Тип возвращаемого результата
+ */
 public abstract class AbstractMethod <U> {
     private final Map<String, String> params = new HashMap<>();
     private HttpTransportClient client = new HttpTransportClient();
