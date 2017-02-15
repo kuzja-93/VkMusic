@@ -1,11 +1,11 @@
-package site.kuzja.vkmusic.metods;
+package site.kuzja.vkmusic.api.metods;
 
-import site.kuzja.vkmusic.objects.UserActor;
+import site.kuzja.vkmusic.api.objects.UserActor;
 
-public class OAuch extends AbstractMethod<UserActor> {
+public class DirectAuch extends AbstractMethod<UserActor> {
 
     private static final String AUCH_URL = "https://oauth.vk.com/token";
-    public OAuch(String clientID, String clientSecret, String userName,
+    public DirectAuch(String clientID, String clientSecret, String userName,
                  String password, int scope, String version) {
         super(AUCH_URL, UserActor.class);
         addParam("grant_type", "password");

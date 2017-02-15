@@ -1,4 +1,4 @@
-package site.kuzja.vkmusic.objects;
+package site.kuzja.vkmusic.api.objects;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -135,7 +135,7 @@ public class Audio {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserActor{");
+        final StringBuilder sb = new StringBuilder("Audio{");
         sb.append("id=").append(id);
         sb.append(", owner_id='").append(ownerId).append("'");
         sb.append(", artist='").append(artist).append("'");

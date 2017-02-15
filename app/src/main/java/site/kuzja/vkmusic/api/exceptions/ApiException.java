@@ -1,4 +1,4 @@
-package site.kuzja.vkmusic;
+package site.kuzja.vkmusic.api.exceptions;
 
 /**
  * Created by user on 14.02.17.

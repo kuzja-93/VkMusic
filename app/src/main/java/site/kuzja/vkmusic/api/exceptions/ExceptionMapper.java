@@ -1,6 +1,7 @@
-package site.kuzja.vkmusic;
+package site.kuzja.vkmusic.api.exceptions;
 
-import site.kuzja.vkmusic.objects.Error;
+import site.kuzja.vkmusic.api.exceptions.ApiException;
+import site.kuzja.vkmusic.api.objects.Error;
 
 public class ExceptionMapper {
     public static ApiException parseException(Error error) {

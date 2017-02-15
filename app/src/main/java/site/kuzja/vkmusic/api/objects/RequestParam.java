@@ -1,4 +1,4 @@
-package site.kuzja.vkmusic.objects;
+package site.kuzja.vkmusic.api.objects;
 
 import com.google.gson.annotations.SerializedName;
 

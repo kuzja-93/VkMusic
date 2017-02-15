@@ -1,10 +1,21 @@
 package site.kuzja.vkmusic;
 
-import site.kuzja.vkmusic.objects.Audio;
-import site.kuzja.vkmusic.objects.AudioList;
-import site.kuzja.vkmusic.objects.UserActor;
+import site.kuzja.vkmusic.api.VkApi;
+import site.kuzja.vkmusic.api.exceptions.ApiException;
+import site.kuzja.vkmusic.api.exceptions.ClientException;
+import site.kuzja.vkmusic.api.objects.Audio;
+import site.kuzja.vkmusic.api.objects.AudioList;
+import site.kuzja.vkmusic.api.objects.UserActor;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
@@ -18,21 +29,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
+    private UserActor actor = null;
+    private AudioList audioList = null;
+    private GetAudioTask mGetAudioTask = null;
 
+    private View mContentMain;
+    private View mProgressView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -41,35 +52,77 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        mContentMain = findViewById(R.id.content_main);
+        mProgressView = findViewById(R.id.load_progress);
+
+        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
-        });
+        });*/
 
-        VkApi api = new VkApi();
-        try {
-            UserActor actor = api.auch("79132469232", "Ax357522064");
-            Log.v("UserActor", actor.toString());
-            AudioList audioList = api.audioGet(actor.getUserID(), actor.getAccessToken());
-            Log.v("audioList", audioList.toString());
-            // находим список
-            ListView mMusicList = (ListView) findViewById(R.id.music_list);
-            // присваиваем адаптер списку
-            mMusicList.setAdapter(new BrowseAdapter(this, audioList));
-        } catch (ClientException e) {
-            Log.v("ClientException", e.toString());
-            finish();
-        } catch (ApiException e) {
-            Log.v("ApiException", e.toString());
-            finish();
+        if (actor == null) {
+            login();
+        } else {
+            loadAudioList();
         }
 
     }
 
+    private void login(){
+        Intent i = new Intent(getApplicationContext(), LoginActivity.class);
+        startActivityForResult(i, 1);
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mContentMain.setVisibility(show ? View.GONE : View.VISIBLE);
+            mContentMain.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mContentMain.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mContentMain.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+    // Function to read the result from newly created activity
+    @Override
+    protected void onActivityResult(int requestCode,
+                                    int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            Bundle extras = data.getExtras();
+            actor = new UserActor(extras.getString("user_id"), extras.getString("access_token"),
+                    extras.getInt("expires_in"));
+            loadAudioList();
+        }
+        else {
+            finish();
+        }
+
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -85,14 +138,81 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-
-
+        if (id == R.id.action_quit) {
+            actor = null;
+            audioList = null;
+            login();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void loadAudioList() {
+        showProgress(true);
+        mGetAudioTask = new MainActivity.GetAudioTask();
+        mGetAudioTask.execute((Void) null);
+    }
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    class GetAudioTask extends AsyncTask<Void, Void, Boolean> {
+        GetAudioTask() {
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            if (actor == null)
+                return false;
+            try {
+                audioList = new VkApi().audio.get(actor.getUserID(), actor.getAccessToken());
+                Log.v("audioList", audioList.toString());
+            } catch (ClientException e) {
+                Log.v("ClientException", e.getMessage());
+                return false;
+            } catch (ApiException e) {
+                Log.v("ApiException", e.toString());
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mGetAudioTask = null;
+            showProgress(false);
+
+            if (success) {
+                // находим список
+                ListView mMusicList = (ListView) findViewById(R.id.music_list);
+                // присваиваем адаптер списку
+                mMusicList.setAdapter(new BrowseAdapter(MainActivity.this, audioList));
+            } else {
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                builder.setTitle("Ошибка!")
+                        .setMessage("Ошибка загрузки аудиозаписей!")
+                        .setIcon(R.drawable.ic_launcher)
+                        .setCancelable(false)
+                        .setNegativeButton("ОК",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
+                finish();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mGetAudioTask = null;
+            showProgress(false);
+        }
+    }
+
     static class ViewHolder {
         public ImageView imageView;
         public TextView artistView;

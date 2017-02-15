@@ -1,4 +1,4 @@
-package site.kuzja.vkmusic;
+package site.kuzja.vkmusic.api.transport;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+
+import site.kuzja.vkmusic.api.exceptions.ClientException;
 
 public class HttpTransportClient {
     private static final String ENCODING = "UTF-8";
@@ -50,7 +52,8 @@ public class HttpTransportClient {
             String result = EntityUtils.toString(response.getEntity(), ENCODING);
 
             if (response.getStatusLine().getStatusCode() != 200)
-                throw new ClientException("Internal API server error. Wrong status code: "
+                throw new ClientException("Internal API server error. Wrong status code("
+                        + response.getStatusLine().getStatusCode() + "): "
                         + response.getStatusLine() + ". Content: " + result);
 
             Map<String, String> headers = getHeaders(response.getAllHeaders());

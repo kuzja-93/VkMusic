@@ -1,4 +1,4 @@
-package site.kuzja.vkmusic.metods;
+package site.kuzja.vkmusic.api.metods;
 
 
 import com.google.gson.Gson;
@@ -11,11 +11,11 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-import site.kuzja.vkmusic.ApiException;
-import site.kuzja.vkmusic.ClientException;
-import site.kuzja.vkmusic.ExceptionMapper;
-import site.kuzja.vkmusic.HttpTransportClient;
-import site.kuzja.vkmusic.objects.Error;
+import site.kuzja.vkmusic.api.exceptions.ApiException;
+import site.kuzja.vkmusic.api.exceptions.ClientException;
+import site.kuzja.vkmusic.api.exceptions.ExceptionMapper;
+import site.kuzja.vkmusic.api.transport.HttpTransportClient;
+import site.kuzja.vkmusic.api.objects.Error;
 
 public abstract class AbstractMethod <U> {
     private final Map<String, String> params = new HashMap<>();

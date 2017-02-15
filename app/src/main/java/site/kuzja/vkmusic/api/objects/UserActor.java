@@ -1,10 +1,11 @@
-package site.kuzja.vkmusic.objects;
+package site.kuzja.vkmusic.api.objects;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class UserActor {
+public class UserActor implements Serializable {
     @SerializedName("user_id")
     private String userID;
 
