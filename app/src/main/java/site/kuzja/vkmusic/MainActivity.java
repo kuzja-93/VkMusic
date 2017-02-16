@@ -6,25 +6,20 @@ import site.kuzja.vkmusic.api.exceptions.ClientException;
 import site.kuzja.vkmusic.api.objects.Audio;
 import site.kuzja.vkmusic.api.objects.AudioList;
 import site.kuzja.vkmusic.api.objects.UserActor;
+import site.kuzja.vkmusic.dao.DAOFactory;
+import site.kuzja.vkmusic.dao.DAOSQLite;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -38,12 +33,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.lang.reflect.Type;
+
 public class MainActivity extends AppCompatActivity {
-    private UserActor actor = null;
+    private UserActor userActor = null;
     private AudioList audioList = null;
     private GetAudioTask mGetAudioTask = null;
 
-    private DBHelper dbHelper;
+    private static final Type daoType = DAOSQLite.class;
 
     private View mContentMain;
     private View mProgressView;
@@ -70,11 +67,11 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });*/
-        dbHelper = new DBHelper(this);
 
-        actor = dbHelper.getUser();
+        userActor = DAOFactory.create(getApplicationContext(), daoType)
+                .getUserActor();
 
-        if (actor == null) {
+        if (userActor == null) {
             login();
         } else {
             loadAudioList();
@@ -87,9 +84,6 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(i, 1);
     }
 
-    /**
-     * Shows the progress UI and hides the login form.
-     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
@@ -124,9 +118,10 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
             Bundle extras = data.getExtras();
-            actor = new UserActor(extras.getInt("user_id"), extras.getString("access_token"),
+            userActor = new UserActor(extras.getInt("user_id"), extras.getString("access_token"),
                     extras.getInt("expires_in"));
-            dbHelper.saveUser(actor);
+            DAOFactory.create(getApplicationContext(), daoType)
+                    .saveUserActor(userActor);
             loadAudioList();
         }
         else {
@@ -150,9 +145,10 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_quit) {
-            actor = null;
+            userActor = null;
             audioList = null;
-            dbHelper.clear();
+            DAOFactory.create(getApplicationContext(), daoType)
+                    .clear();
             login();
             return true;
         }
@@ -175,10 +171,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            if (actor == null)
+            if (userActor == null)
                 return false;
             try {
-                audioList = new VkApi().audio.get(actor.getUserID(), actor.getAccessToken());
+                audioList = new VkApi().audio.get(userActor.getUserID(), userActor.getAccessToken());
                 Log.v("audioList", audioList.toString());
             } catch (ClientException e) {
                 Log.v("ClientException", e.getMessage());
@@ -263,47 +259,5 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class DBHelper extends SQLiteOpenHelper {
 
-        public UserActor getUser() {
-            Cursor c = getWritableDatabase()
-                    .query("user", null, null, null, null, null, null);
-            if (!c.moveToFirst())
-                return null;
-            return new UserActor(c.getInt(c.getColumnIndex("user_id")),
-                    c.getString(c.getColumnIndex("access_token")),
-                    c.getInt(c.getColumnIndex("expires_in")));
-        }
-
-        public void saveUser(UserActor actor) {
-            ContentValues cv = new ContentValues();
-            cv.put("user_id", actor.getUserID());
-            cv.put("access_token", actor.getAccessToken());
-            cv.put("expires_in", actor.getExpiresIn());
-            getWritableDatabase().insert("user", null, cv);
-        }
-
-        public void clear() {
-            getWritableDatabase().delete("user", null, null);
-        }
-
-        public DBHelper(Context context) {
-            super(context, "myDB", null, 1);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            Log.d("DBHelper", "--- onCreate database ---");
-            // создаем таблицу с полями
-            db.execSQL("create table user ("
-                    + "user_id integer primary key ,"
-                    + "access_token text,"
-                    + "expires_in integer" + ");");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        }
-    }
 }
