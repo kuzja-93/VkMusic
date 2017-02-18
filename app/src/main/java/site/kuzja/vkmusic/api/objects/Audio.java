@@ -2,6 +2,7 @@ package site.kuzja.vkmusic.api.objects;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.security.PublicKey;
 import java.util.Objects;
 
 /**
@@ -9,6 +10,14 @@ import java.util.Objects;
  */
 
 public class Audio {
+
+    public static final int STATUS_STOPED = 0;
+    public static final int STATUS_PAUSED = 1;
+    public static final int STATUS_PLAYING = 2;
+    public static final int STATUS_PREPARING = 3;
+
+
+    private int status = STATUS_STOPED;
     /**
      * идентификатор аудиозаписи
      */
@@ -107,6 +116,14 @@ public class Audio {
 
     public String getUrl() {
         return url;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 
     @Override
