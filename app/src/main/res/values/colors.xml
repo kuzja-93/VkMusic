@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3f51b5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="bt_accent">#00B8D4</color>
+    <color name="colorPrimary">#5e81a8</color>
+    <color name="colorPrimaryDark">#507299</color>
+    <color name="colorAccent">@color/colorPrimary</color> <!-- #FF4081 -->
+    <color name="bt_accent">@color/colorPrimary</color>
     <color name="media_item_icon_playing">@color/bt_accent</color>
     <color name="media_item_icon_not_playing">#ccc</color>
     <color name="background_gradient_start">#000000</color>
     <color name="background_gradient_end">#DDDDDD</color>
+    <color name="background">#edeef0</color>
+    <color name="btn">#e5ebf1</color>
 </resources>

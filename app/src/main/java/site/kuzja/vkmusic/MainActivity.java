@@ -9,25 +9,19 @@ import site.kuzja.vkmusic.api.objects.UserActor;
 import site.kuzja.vkmusic.dao.DAOFactory;
 import site.kuzja.vkmusic.dao.DAOSQLite;
 
-import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -40,9 +34,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 
 public class MainActivity extends AppCompatActivity {
@@ -161,7 +155,8 @@ public class MainActivity extends AppCompatActivity {
             userActor = null;
             audioList = null;
             DAOFactory.create(getApplicationContext(), daoType)
-                    .clear();
+                    .deleteUserActor();
+            mMediaService.release();
             login();
             return true;
         }
@@ -175,25 +170,8 @@ public class MainActivity extends AppCompatActivity {
         mGetAudioTask.execute((Void) null);
     }
 
-    static class AlertDialogFactory {
-        static AlertDialog create(String title, String message, Context context) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(title)
-                    .setMessage(message)
-                    .setIcon(R.drawable.ic_launcher)
-                    .setCancelable(false)
-                    .setNegativeButton("ОК",
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    dialog.cancel();
-                                }
-                            });
-            return builder.create();
-        }
-    }
     /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
+     *
      */
     class GetAudioTask extends AsyncTask<Void, Void, Boolean> {
         GetAudioTask() {
@@ -228,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 // присваиваем адаптер списку
                 final BrowseAdapter adapter = new BrowseAdapter(MainActivity.this, audioList);
                 mMusicList.setAdapter(adapter);
-                mMediaService = new MediaService(new UpdateImpl() {
+                mMediaService = new MediaService(new MediaService.UpdateImpl() {
                     @Override
                     public void update() {
                         adapter.notifyDataSetChanged();
@@ -238,9 +216,9 @@ public class MainActivity extends AppCompatActivity {
                     public void playNextItem(Audio item) {
                         int position = adapter.getPosition(item) + 1;
                         position = position == adapter.getCount() ? 0 : position;
-                        if (! mMediaService.setAudioItem(audioList.getItems().get(position)))
+                        if (! mMediaService.setAudioItem(adapter.getItem(position)))
                             AlertDialogFactory.create(getString(R.string.error_title), "Ошибка загрузки аудиозаписи",
-                                    MainActivity.this).show();
+                                    AlertDialogFactory.BUTTONS_OK, MainActivity.this).show();
                     }
                 });
                 // устанавливем обработчик нажатия
@@ -251,12 +229,12 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         if (! mMediaService.setAudioItem(audioList.getItems().get(position)))
                             AlertDialogFactory.create(getString(R.string.error_title), "Ошибка загрузки аудиозаписи",
-                                    MainActivity.this).show();
+                                    AlertDialogFactory.BUTTONS_OK, MainActivity.this).show();
                     }
                 });
             } else {
                 AlertDialogFactory.create(getString(R.string.error_title), "Ошибка загрузки аудиозаписей",
-                        MainActivity.this).show();
+                        AlertDialogFactory.BUTTONS_OK, MainActivity.this).show();
                 finish();
             }
         }
@@ -269,73 +247,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     static class ViewHolder {
-        public ImageView mImageView;
-        public TextView mArtistView;
-        public TextView mTitleView;
+        ImageView mImageView;
+         TextView mArtistView;
+         TextView mTitleView;
+         ProgressBar mProgressBar;
     }
 
     private static class BrowseAdapter extends ArrayAdapter<Audio> {
         private static ColorStateList sColorStatePlaying;
         private static ColorStateList sColorStateNotPlaying;
 
-        private static void initializeColorStateLists(Context ctx) {
-            sColorStateNotPlaying = ColorStateList.valueOf(ctx.getResources().getColor(
+        BrowseAdapter(Activity context, AudioList list) {
+            super(context, R.layout.music_item_layout, list.getItems());
+            sColorStateNotPlaying = ColorStateList.valueOf(context.getResources().getColor(
                     R.color.media_item_icon_not_playing));
-            sColorStatePlaying = ColorStateList.valueOf(ctx.getResources().getColor(
+            sColorStatePlaying = ColorStateList.valueOf(context.getResources().getColor(
                     R.color.media_item_icon_playing));
         }
 
-
-        public BrowseAdapter(Activity context, AudioList list) {
-            super(context, R.layout.music_item_layout, list.getItems());
-            if (sColorStateNotPlaying == null || sColorStatePlaying == null)
-                initializeColorStateLists(context);
-        }
-
-        Drawable getDrawableByState(Context context, int state) {
-            if (sColorStateNotPlaying == null || sColorStatePlaying == null) {
-                initializeColorStateLists(context);
-            }
-
-            switch (state) {
-                case Audio.STATUS_PREPARING:
-                    AnimationDrawable animation = (AnimationDrawable)
-                            ContextCompat.getDrawable(context, R.drawable.ic_equalizer_white_36dp);
-                    DrawableCompat.setTintList(animation, sColorStatePlaying);
-                    animation.start();
-                    return animation;
-                case Audio.STATUS_STOPED:
-                    Drawable stopDrawable = ContextCompat.getDrawable(context,
-                            R.drawable.ic_play_arrow_black_36dp);
-                    DrawableCompat.setTintList(stopDrawable, sColorStateNotPlaying);
-                    return stopDrawable;
-                case Audio.STATUS_PLAYING:
-                    Drawable playDrawable = ContextCompat.getDrawable(context,
-                            R.drawable.ic_pause_black_36dp);
-                    DrawableCompat.setTintList(playDrawable, sColorStatePlaying);
-                    return playDrawable;
-                case Audio.STATUS_PAUSED:
-                    Drawable pauseDrawable = ContextCompat.getDrawable(context,
-                            R.drawable.ic_play_arrow_black_36dp);
-                    DrawableCompat.setTintList(pauseDrawable, sColorStatePlaying);
-                    return pauseDrawable;
-                default:
-                    return null;
-            }
-        }
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             // ViewHolder буферизирует оценку различных полей шаблона элемента
 
             ViewHolder holder;
             Audio item = getItem(position);
             if (convertView == null) {
-                convertView = LayoutInflater.from((Activity) getContext())
+                convertView = LayoutInflater.from(getContext())
                         .inflate(R.layout.music_item_layout, parent, false);
                 holder = new ViewHolder();
                 holder.mArtistView = (TextView) convertView.findViewById(R.id.artist);
                 holder.mTitleView = (TextView) convertView.findViewById(R.id.title);
                 holder.mImageView = (ImageView) convertView.findViewById(R.id.play_eq);
+                holder.mProgressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
+
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -344,10 +289,31 @@ public class MainActivity extends AppCompatActivity {
             holder.mArtistView.setText(item.getArtist());
             holder.mTitleView.setText(item.getTitle());
 
-            Drawable drawable = getDrawableByState((Activity) getContext(), item.getStatus());
+            Drawable drawable;
+            holder.mImageView.setVisibility(View.VISIBLE);
+            holder.mImageView.setImageTintList(sColorStatePlaying);
+            switch (item.getStatus()) {
+                case Audio.STATUS_STOPED:
+                    drawable = ContextCompat.getDrawable(getContext(),
+                            R.drawable.ic_play_arrow_black_36dp);
+                    holder.mImageView.setImageTintList(sColorStateNotPlaying);
+                    break;
+                case Audio.STATUS_PLAYING:
+                    drawable = ContextCompat.getDrawable(getContext(),
+                            R.drawable.ic_pause_black_36dp);
+                    break;
+                case Audio.STATUS_PAUSED:
+                    drawable = ContextCompat.getDrawable(getContext(),
+                            R.drawable.ic_play_arrow_black_36dp);
+                    break;
+                case Audio.STATUS_PREPARING:
+                    holder.mProgressBar.setVisibility(View.VISIBLE);
+                default:
+                    drawable = null;
+            }
             if (drawable != null) {
+                holder.mProgressBar.setVisibility(View.GONE);
                 holder.mImageView.setImageDrawable(drawable);
-                holder.mImageView.setVisibility(View.VISIBLE);
             } else {
                 holder.mImageView.setVisibility(View.GONE);
             }

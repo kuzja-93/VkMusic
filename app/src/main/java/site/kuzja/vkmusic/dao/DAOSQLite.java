@@ -10,15 +10,16 @@ import android.database.sqlite.SQLiteOpenHelper;
 import site.kuzja.vkmusic.api.objects.UserActor;
 
 /**
- * Created by user on 16.02.17.
+ * DAO для созранения пользователя в базу данных SQLite
  */
 
 public class DAOSQLite implements DAOImpl {
-    SQLiteDatabase dataBase;
-    public DAOSQLite(Context context) {
+    private SQLiteDatabase dataBase;
+    DAOSQLite(Context context) {
         dataBase = new DBHelper(context).getWritableDatabase();
     }
 
+    @Override
     public UserActor getUserActor() {
         Cursor c = dataBase.query("user", null, null, null, null, null, null);
         if (!c.moveToFirst())
@@ -28,6 +29,7 @@ public class DAOSQLite implements DAOImpl {
                 c.getInt(c.getColumnIndex("expires_in")));
     }
 
+    @Override
     public void saveUserActor(UserActor actor) {
         ContentValues cv = new ContentValues();
         cv.put("user_id", actor.getUserID());
@@ -36,26 +38,28 @@ public class DAOSQLite implements DAOImpl {
         dataBase.insert("user", null, cv);
     }
 
-    public void clear() {
+    @Override
+    public void deleteUserActor() {
         dataBase.delete("user", null, null);
     }
+
+    class DBHelper extends SQLiteOpenHelper {
+        public DBHelper(Context context) {
+            super(context, "VkMusic", null, 1);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL("create table user ("
+                    + "user_id integer primary key ,"
+                    + "access_token text,"
+                    + "expires_in integer" + ");");
+        }
+
+        @Override
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+        }
+    }
 }
 
-class DBHelper extends SQLiteOpenHelper {
-    public DBHelper(Context context) {
-        super(context, "VkMusic", null, 1);
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL("create table user ("
-                + "user_id integer primary key ,"
-                + "access_token text,"
-                + "expires_in integer" + ");");
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-    }
-}

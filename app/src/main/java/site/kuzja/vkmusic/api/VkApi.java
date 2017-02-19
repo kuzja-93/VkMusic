@@ -23,8 +23,8 @@ public class VkApi {
         audio = new AudioApi(API_VERSION);
     }
 
-    public UserActor directAuch(String username, String password) throws ClientException, ApiException {
-        return new DirectAuch(APP_ID, CLIENT_SECRET, username, password, scope, API_VERSION)
+    public UserActor directAuch(String userName, String password) throws ClientException, ApiException {
+        return new DirectAuch(APP_ID, CLIENT_SECRET, userName, password, scope, API_VERSION)
                 .execute();
     }
 

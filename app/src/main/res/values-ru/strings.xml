@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ВкМузыка</string>
+    <string name="app_name">АудиозаписиВк</string>
     <string name="action_sign_in">Войти</string>
     <string name="action_quit">Выйти</string>
     <string name="error_field_required">Это обязательное поле</string>
-    <string name="error_invalid_email">Неверный email или телефон</string>
-    <string name="error_invalid_password">Неверный пароль</string>
+    <string name="error_invalid_email">Некорректный email или телефон</string>
+    <string name="error_invalid_password">Некорректный пароль</string>
     <string name="error_incorrect_password">Некорректный пароль</string>
     <string name="play_item">Воспроизвести</string>
     <string name="prompt_password">Пароль</string>

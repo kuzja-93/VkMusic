@@ -8,12 +8,7 @@ import java.io.IOException;
 
 import site.kuzja.vkmusic.api.objects.Audio;
 
-interface UpdateImpl {
-    void update();
-    void playNextItem(Audio item);
-}
-
-public class MediaService implements MediaPlayer.OnPreparedListener,
+class MediaService implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener{
     private MediaPlayer mMediaPlayer = null;
     private Audio currentItem = null;
@@ -22,19 +17,27 @@ public class MediaService implements MediaPlayer.OnPreparedListener,
     private static final String LOG_TAG = "MediaService";
 
     private void updateStatus(Audio item, int status) {
+        if (currentItem == null)
+            return;
         item.setStatus(status);
         if (updateImpl != null)
             updateImpl.update();
     }
 
-    public MediaService(UpdateImpl impl) {
+    MediaService(UpdateImpl impl) {
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnCompletionListener(this);
         updateImpl = impl;
     }
 
-    public boolean setAudioItem(Audio item) {
+    void release() {
+        updateStatus(currentItem, Audio.STATUS_STOPED);
+        currentItem = null;
+        mMediaPlayer.release();
+    }
+
+    boolean setAudioItem(Audio item) {
         if (currentItem != null &&
                 currentItem.getId() == item.getId()) {
             if (currentItem.getStatus() == Audio.STATUS_PLAYING) {
@@ -46,8 +49,7 @@ public class MediaService implements MediaPlayer.OnPreparedListener,
             }
         } else {
             Log.d(LOG_TAG, "start HTTP");
-            if (currentItem != null)
-                updateStatus(currentItem, Audio.STATUS_STOPED);
+            updateStatus(currentItem, Audio.STATUS_STOPED);
             mMediaPlayer.reset();
             try {
                 mMediaPlayer.setDataSource(item.getUrl());
@@ -83,5 +85,10 @@ public class MediaService implements MediaPlayer.OnPreparedListener,
     public void onPrepared(MediaPlayer mp) {
         mMediaPlayer.start();
         updateStatus(currentItem, Audio.STATUS_PLAYING);
+    }
+
+    interface UpdateImpl {
+        void update();
+        void playNextItem(Audio item);
     }
 }
