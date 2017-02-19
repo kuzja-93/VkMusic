@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import site.kuzja.vkmusic.api.objects.Audio;
 
-class MediaService implements MediaPlayer.OnPreparedListener,
+public class MediaService implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener{
     private MediaPlayer mMediaPlayer = null;
     private Audio currentItem = null;
