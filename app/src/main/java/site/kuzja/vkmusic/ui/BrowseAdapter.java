@@ -53,6 +53,7 @@ class BrowseAdapter extends ArrayAdapter<MusicItem> {
             holder.mImageView = (ImageView) convertView.findViewById(R.id.play_eq);
             holder.mProgressBar = (ProgressBar) convertView.findViewById(R.id.progressBar);
             holder.mDownloadingProgress = (ProgressBar) convertView.findViewById(R.id.downloadProgressBar);
+            holder.mDownloadImage = (ImageView) convertView.findViewById(R.id.downloadImage);
 
             convertView.setTag(holder);
         } else {
@@ -90,11 +91,22 @@ class BrowseAdapter extends ArrayAdapter<MusicItem> {
         } else {
             holder.mImageView.setVisibility(View.GONE);
         }
-        if (item.getDownloadingStatus() == MusicItem.DOWNLOADING) {
-            holder.mDownloadingProgress.setVisibility(View.VISIBLE);
-            holder.mDownloadingProgress.setProgress(item.getDownloadingProgress());
-        } else {
-            holder.mDownloadingProgress.setVisibility(View.GONE);
+        switch (item.getDownloadingStatus()) {
+            case MusicItem.DOWNLOADING:
+                holder.mDownloadingProgress.setVisibility(View.VISIBLE);
+                holder.mDownloadingProgress.setProgress(item.getDownloadingProgress());
+                holder.mDownloadImage.setImageTintList(sColorStateNotPlaying);
+                holder.mDownloadImage.setVisibility(View.VISIBLE);
+                break;
+            case MusicItem.DOWNLOADED:
+                holder.mDownloadingProgress.setVisibility(View.GONE);
+                holder.mDownloadImage.setImageTintList(sColorStatePlaying);
+                holder.mDownloadImage.setVisibility(View.VISIBLE);
+                break;
+            case MusicItem.NOT_DOWNLOADED:
+                holder.mDownloadingProgress.setVisibility(View.GONE);
+                holder.mDownloadImage.setVisibility(View.GONE);
+                break;
         }
 
         return convertView;

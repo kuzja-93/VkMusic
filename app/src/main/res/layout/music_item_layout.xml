@@ -15,6 +15,7 @@
   limitations under the License.
   -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/media_item_height">
@@ -36,6 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_marginStart="@dimen/media_item_text_margin_start"
+        android:layout_marginEnd="@dimen/media_item_text_margin_start"
         android:layout_centerVertical="true"
         android:orientation="vertical"
         android:id="@+id/linearLayout">
@@ -50,6 +52,7 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="?android:attr/textColorPrimary"/>
 
+
         <TextView
             android:id="@+id/title"
             tools:text="Misters"
@@ -61,6 +64,15 @@
             android:textColor="?android:attr/textColorSecondary"/>
 
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/downloadImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="@dimen/media_item_icon_margin_start"
+        android:src="@drawable/ic_arrow_36dp" />
 
     <ProgressBar
         style="?android:attr/progressBarStyle"

@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 class ViewHolder {
     ImageView mImageView;
+    ImageView mDownloadImage;
     TextView mArtistView;
     TextView mTitleView;
     ProgressBar mProgressBar;
