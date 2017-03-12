@@ -23,17 +23,16 @@ import site.kuzja.vkmusic.api.objects.Error;
  */
 public abstract class AbstractMethod <U> {
     private final Map<String, String> params = new HashMap<>();
-    private HttpTransportClient client = new HttpTransportClient();
     private String url;
     private Gson gson;
     private Type responseClass;
-    public AbstractMethod(String url, Type responseClass) {
+    AbstractMethod(String url, Type responseClass) {
         this.url = url;
         this.gson = new Gson();
         this.responseClass = responseClass;
     }
     private String mapToGetString() {
-        String result = new String();
+        String result = "";
         for (Map.Entry<String, String> entry: params.entrySet()) {
             if (!result.isEmpty())
                 result += "&";
@@ -43,16 +42,16 @@ public abstract class AbstractMethod <U> {
         return result;
     }
 
-    public void addParam(String key, String value) {
+    void addParam(String key, String value) {
         params.put(key, value);
     }
-    public void addParam(String key, int value) {
+    void addParam(String key, int value) {
         addParam(key, Integer.toString(value));
     }
-    public void addParam(String key, boolean value) {
+    /*void addParam(String key, boolean value) {
         addParam(key, value ? "1" : "0");
-    }
-    protected void accessToken(String value) {
+    }*/
+    void accessToken(String value) {
         addParam("access_token", value);
     }
     protected void version(String value) {
@@ -60,7 +59,7 @@ public abstract class AbstractMethod <U> {
     }
 
     public U execute() throws ClientException, ApiException {
-        String textResponse = client.post(url, mapToGetString());
+        String textResponse = HttpTransportClient.getInstance().post(url, mapToGetString());
         JsonObject json = (JsonObject) new JsonParser().parse(textResponse);
 
         if (json.has("error")) {
@@ -69,12 +68,10 @@ public abstract class AbstractMethod <U> {
             try {
                 error = gson.fromJson(errorElement, Error.class);
             } catch (JsonSyntaxException e) {
-                throw new ClientException("Can't parse json response");
+                throw new ClientException("Некорректный ответ");
             }
 
-            ApiException exception = ExceptionMapper.parseException(error);
-
-            throw exception;
+            throw ExceptionMapper.parseException(error);
         }
 
         JsonElement response = json;
@@ -85,7 +82,7 @@ public abstract class AbstractMethod <U> {
         try {
             return gson.fromJson(response, responseClass);
         } catch (JsonSyntaxException e) {
-            throw new ClientException("Can't parse json response");
+            throw new ClientException("Некорректный ответ");
         }
     }
 }

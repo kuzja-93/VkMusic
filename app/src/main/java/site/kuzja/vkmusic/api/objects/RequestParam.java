@@ -44,10 +44,8 @@ public class RequestParam {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("RequestParam{");
-        sb.append("key='").append(key).append("'");
-        sb.append(", value='").append(value).append("'");
-        sb.append('}');
-        return sb.toString();
+        return "RequestParam{" + "key='" + key + "'" +
+                ", value='" + value + "'" +
+                '}';
     }
 }

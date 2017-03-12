@@ -6,12 +6,12 @@ import site.kuzja.vkmusic.api.metods.AudioGet;
 import site.kuzja.vkmusic.api.objects.AudioList;
 
 /**
- * Created by user on 15.02.17.
+ * Класс групперующий все методы для работы с аудио
  */
 
 public class AudioApi {
-    String version;
-    public AudioApi(String version)
+    private String version;
+    AudioApi(String version)
     {
         this.version = version;
     }

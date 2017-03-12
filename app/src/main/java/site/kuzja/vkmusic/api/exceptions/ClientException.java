@@ -1,7 +1,7 @@
 package site.kuzja.vkmusic.api.exceptions;
 
 /**
- * Created by user on 14.02.17.
+ * "Клиентское" исключение
  */
 public class ClientException extends Exception {
     private String description;
@@ -9,7 +9,7 @@ public class ClientException extends Exception {
     private String message;
 
 
-    public ClientException(String description, String message) {
+    private ClientException(String description, String message) {
         this.description = description;
         this.message = message;
     }

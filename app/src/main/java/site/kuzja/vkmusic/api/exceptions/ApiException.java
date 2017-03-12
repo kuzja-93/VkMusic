@@ -10,14 +10,16 @@ public class ApiException extends Exception{
 
     private Integer code;
 
-    public ApiException(Integer code, String description, String message) {
+    private ApiException(Integer code, String description, String message) {
         this.description = description;
         this.code = code;
         this.message = message;
     }
 
-    public ApiException(Integer code, String message) {
-        this(code, "Unknown", message);
+    ApiException(Integer code, String message) {
+        this.description = "Unknown";
+        this.code = code;
+        this.message = message;
     }
 
     public String getDescription() {

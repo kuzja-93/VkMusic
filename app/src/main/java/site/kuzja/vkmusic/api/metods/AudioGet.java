@@ -3,7 +3,7 @@ package site.kuzja.vkmusic.api.metods;
 import site.kuzja.vkmusic.api.objects.AudioList;
 
 /**
- * Created by user on 14.02.17.
+ * Метод получения списка аудиозаписей
  */
 
 public class AudioGet extends AbstractApiMethod<AudioList>{

@@ -2,10 +2,8 @@ package site.kuzja.vkmusic.api;
 
 import site.kuzja.vkmusic.api.exceptions.ApiException;
 import site.kuzja.vkmusic.api.exceptions.ClientException;
-import site.kuzja.vkmusic.api.metods.AudioGet;
-import site.kuzja.vkmusic.api.objects.AudioList;
 import site.kuzja.vkmusic.api.objects.UserActor;
-import site.kuzja.vkmusic.api.metods.DirectAuch;
+import site.kuzja.vkmusic.api.metods.DirectAuth;
 
 public class VkApi {
     private static final String APP_ID = "3697615";
@@ -24,7 +22,7 @@ public class VkApi {
     }
 
     public UserActor directAuch(String userName, String password) throws ClientException, ApiException {
-        return new DirectAuch(APP_ID, CLIENT_SECRET, userName, password, scope, API_VERSION)
+        return new DirectAuth(APP_ID, CLIENT_SECRET, userName, password, scope, API_VERSION)
                 .execute();
     }
 

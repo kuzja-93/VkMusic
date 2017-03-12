@@ -92,16 +92,14 @@ public class Error {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Error{");
-        sb.append("errorCode=").append(errorCode);
-        sb.append(", errorMsg='").append(errorMsg).append("'");
-        sb.append(", captchaSid='").append(captchaSid).append("'");
-        sb.append(", captchaImg='").append(captchaImg).append("'");
-        sb.append(", confirmationText='").append(confirmationText).append("'");
-        sb.append(", redirectUri='").append(redirectUri).append("'");
-        sb.append(", requestParams=").append(requestParams);
-        sb.append('}');
-        return sb.toString();
+        return "Error{" + "errorCode=" + errorCode +
+                ", errorMsg='" + errorMsg + "'" +
+                ", captchaSid='" + captchaSid + "'" +
+                ", captchaImg='" + captchaImg + "'" +
+                ", confirmationText='" + confirmationText + "'" +
+                ", redirectUri='" + redirectUri + "'" +
+                ", requestParams=" + requestParams +
+                '}';
 
     }
 }

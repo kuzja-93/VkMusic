@@ -6,18 +6,11 @@ import java.security.PublicKey;
 import java.util.Objects;
 
 /**
- * Created by user on 14.02.17.
+ * Обект хранящий информацию о аудиозаписи
  */
 
 public class Audio {
 
-    public static final int STATUS_STOPED = 0;
-    public static final int STATUS_PAUSED = 1;
-    public static final int STATUS_PLAYING = 2;
-    public static final int STATUS_PREPARING = 3;
-
-
-    private int status = STATUS_STOPED;
     /**
      * идентификатор аудиозаписи
      */
@@ -118,14 +111,6 @@ public class Audio {
         return url;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(id, ownerId, artist, title, duration,
@@ -152,20 +137,18 @@ public class Audio {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("Audio{");
-        sb.append("id=").append(id);
-        sb.append(", owner_id='").append(ownerId).append("'");
-        sb.append(", artist='").append(artist).append("'");
-        sb.append(", title='").append(title).append("'");
-        sb.append(", duration='").append(duration).append("'");
-        sb.append(", url='").append(url).append("'");
-        sb.append(", lyrics_id='").append(lyricsId).append("'");
-        sb.append(", album_id='").append(albumId).append("'");
-        sb.append(", genre_id='").append(genreId).append("'");
-        sb.append(", date='").append(date).append("'");
-        sb.append(", no_search='").append(noSearch).append("'");
-        sb.append('}');
-        return sb.toString();
+        return "Audio{" + "id=" + id +
+                ", owner_id='" + ownerId + "'" +
+                ", artist='" + artist + "'" +
+                ", title='" + title + "'" +
+                ", duration='" + duration + "'" +
+                ", url='" + url + "'" +
+                ", lyrics_id='" + lyricsId + "'" +
+                ", album_id='" + albumId + "'" +
+                ", genre_id='" + genreId + "'" +
+                ", date='" + date + "'" +
+                ", no_search='" + noSearch + "'" +
+                '}';
 
     }
 }

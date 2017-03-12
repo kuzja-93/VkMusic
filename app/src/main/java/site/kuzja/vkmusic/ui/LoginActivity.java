@@ -1,43 +1,31 @@
-package site.kuzja.vkmusic;
+package site.kuzja.vkmusic.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import site.kuzja.vkmusic.R;
 import site.kuzja.vkmusic.api.VkApi;
 import site.kuzja.vkmusic.api.exceptions.ApiException;
 import site.kuzja.vkmusic.api.exceptions.ClientException;
-import site.kuzja.vkmusic.api.objects.AudioList;
 import site.kuzja.vkmusic.api.objects.UserActor;
 
 
@@ -45,6 +33,7 @@ import site.kuzja.vkmusic.api.objects.UserActor;
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity {
+    private static final String LOG_TAG = "DownloadFileFromURL";
 
     private UserLoginTask mAuthTask = null;
 
@@ -83,16 +72,6 @@ public class LoginActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.login_progress);
     }
 
-    /*private void populateAutoComplete() {
-        getLoaderManager().initLoader(0, null, this);
-    }*/
-
-
-    /**
-     * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid email, missing fields, etc.), the
-     * errors are presented and no actual login attempt is made.
-     */
     private void attemptLogin() {
         if (mAuthTask != null) {
             return;
@@ -153,6 +132,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Отображает прогресс
      */
+    @SuppressLint("ObsoleteSdkInt")
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
@@ -190,7 +170,7 @@ public class LoginActivity extends AppCompatActivity {
      * Represents an asynchronous login task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+     private class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mUserName;
         private final String mPassword;
@@ -205,12 +185,11 @@ public class LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             try {
                 actor = new VkApi().directAuch(mUserName, mPassword);
-                Log.v("UserActor", actor.toString());
             } catch (ClientException e) {
-                Log.v("ClientException", e.getMessage());
+                Log.e(LOG_TAG, e.getMessage());
                 return false;
             } catch (ApiException e) {
-                Log.v("ApiException", e.toString());
+                Log.e(LOG_TAG, e.toString());
                 return false;
             }
             return true;
@@ -229,8 +208,8 @@ public class LoginActivity extends AppCompatActivity {
                 setResult(RESULT_OK, i);
                 finish();
             } else {
-                AlertDialogFactory.create(getString(R.string.error_title), "Ошибка авторизации",
-                        AlertDialogFactory.BUTTONS_OK, LoginActivity.this).show();
+                DialogFactory.createAlertDialog(getString(R.string.error_title), "Ошибка авторизации",
+                        DialogFactory.BUTTONS_OK, LoginActivity.this).show();
             }
         }
 

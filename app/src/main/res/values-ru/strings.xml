@@ -12,4 +12,6 @@
     <string name="prompt_username">Email или телефон</string>
     <string name="title_activity_login">Вход</string>
     <string name="error_title">Ошибка</string>
+    <string name="play">Воспроизвести</string>
+    <string name="save_to_file">Сохранить</string>
 </resources>

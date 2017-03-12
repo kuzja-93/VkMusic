@@ -1,6 +1,5 @@
 package site.kuzja.vkmusic.api.exceptions;
 
-import site.kuzja.vkmusic.api.exceptions.ApiException;
 import site.kuzja.vkmusic.api.objects.Error;
 
 /**

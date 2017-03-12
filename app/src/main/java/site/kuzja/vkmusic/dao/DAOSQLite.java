@@ -1,6 +1,7 @@
 package site.kuzja.vkmusic.dao;
 
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -21,7 +22,7 @@ public class DAOSQLite implements DAOImpl {
 
     @Override
     public UserActor getUserActor() {
-        Cursor c = dataBase.query("user", null, null, null, null, null, null);
+        @SuppressLint("Recycle") Cursor c = dataBase.query("user", null, null, null, null, null, null);
         if (!c.moveToFirst())
             return null;
         return new UserActor(c.getInt(c.getColumnIndex("user_id")),
@@ -43,8 +44,8 @@ public class DAOSQLite implements DAOImpl {
         dataBase.delete("user", null, null);
     }
 
-    class DBHelper extends SQLiteOpenHelper {
-        public DBHelper(Context context) {
+    private class DBHelper extends SQLiteOpenHelper {
+        DBHelper(Context context) {
             super(context, "VkMusic", null, 1);
         }
 

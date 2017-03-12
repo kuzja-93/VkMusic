@@ -15,16 +15,16 @@ import java.util.Map;
 
 import site.kuzja.vkmusic.api.exceptions.ClientException;
 
+@SuppressWarnings("deprecation")
 public class HttpTransportClient {
     private static final String ENCODING = "UTF-8";
     private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
 
-    //private static final ConnectionsSupervisor SUPERVISOR = new ConnectionsSupervisor();
     private static HttpTransportClient instance;
     private static HttpClient httpClient;
 
-    public HttpTransportClient() {
+    private HttpTransportClient() {
         httpClient = new DefaultHttpClient();
     }
 

@@ -15,4 +15,6 @@
 
     <!-- Code strings -->
     <string name="error_title">Error</string>
+    <string name="play">Play</string>
+    <string name="save_to_file">Save</string>
 </resources>

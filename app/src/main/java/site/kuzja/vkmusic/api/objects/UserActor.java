@@ -15,8 +15,6 @@ public class UserActor implements Serializable {
     @SerializedName("expires_in")
     private int expiresIn;
 
-    public UserActor() {
-    }
     public UserActor(int userID, String accessToken, int expiresIn) {
         this.userID = userID;
         this.accessToken = accessToken;
@@ -49,12 +47,10 @@ public class UserActor implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserActor{");
-        sb.append("access_token=").append(accessToken);
-        sb.append(", expires_in='").append(expiresIn).append("'");
-        sb.append(", user_id='").append(userID).append("'");
-        sb.append('}');
-        return sb.toString();
+        return "UserActor{" + "access_token=" + accessToken +
+                ", expires_in='" + expiresIn + "'" +
+                ", user_id='" + userID + "'" +
+                '}';
 
     }
 }

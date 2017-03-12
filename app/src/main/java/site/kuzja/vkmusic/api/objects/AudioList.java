@@ -20,10 +20,6 @@ public class AudioList {
     @SerializedName("items")
     private List<Audio> items;
 
-    public int getCount() {
-        return count;
-    }
-
     public List<Audio> getItems() {
         return items;
     }
@@ -44,10 +40,8 @@ public class AudioList {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("AudioList{");
-        sb.append("count=").append(count);
-        sb.append(", items=").append(items);
-        sb.append('}');
-        return sb.toString();
+        return "AudioList{" + "count=" + count +
+                ", items=" + items +
+                '}';
     }
 }
