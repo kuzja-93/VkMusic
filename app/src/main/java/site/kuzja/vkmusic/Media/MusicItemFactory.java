@@ -1,7 +1,6 @@
 package site.kuzja.vkmusic.Media;
 
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,13 +25,8 @@ public class MusicItemFactory {
                     audio.getArtist(),
                     audio.getTitle());
             MusicItem item = new MusicItem(audio, fileName);
-            if (new File(fileName).exists()) {
-                Log.d("MusicItemFactory", "Файл обнаружен в файловой системе");
+            if (new File(fileName).exists())
                 item.setDownloadingStatus(MusicItem.DOWNLOADED);
-            }
-            Log.d("MusicItemFactory", String.format("Файл %s - %sзагружен",
-                    fileName,
-                    item.getDownloadingStatus() == MusicItem.DOWNLOADED ? "" : "не "));
             resultList.add(item);
         }
         return resultList;
