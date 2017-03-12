@@ -4,8 +4,10 @@ import site.kuzja.vkmusic.DownloadFileFromURL;
 import site.kuzja.vkmusic.Media.MediaService;
 import site.kuzja.vkmusic.Media.MusicItem;
 import site.kuzja.vkmusic.Media.MusicItemFactory;
+import site.kuzja.vkmusic.MediaNotificationManager;
 import site.kuzja.vkmusic.R;
 import site.kuzja.vkmusic.interfaces.OnPlayNextItem;
+import site.kuzja.vkmusic.interfaces.OnPlayPreviousItem;
 import site.kuzja.vkmusic.interfaces.OnUIUpdateListener;
 import site.kuzja.vkmusic.api.VkApi;
 import site.kuzja.vkmusic.api.exceptions.ApiException;
@@ -16,6 +18,8 @@ import site.kuzja.vkmusic.dao.DAOFactory;
 import site.kuzja.vkmusic.dao.DAOSQLite;
 
 import android.annotation.SuppressLint;
+import android.app.Application;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -40,17 +44,18 @@ import android.widget.ListView;
 import java.lang.reflect.Type;
 
 public class MainActivity extends AppCompatActivity implements OnUIUpdateListener,
-        OnPlayNextItem {
-    private UserActor userActor = null;
-    private GetAudioTask mGetAudioTask = null;
+        OnPlayNextItem, OnPlayPreviousItem {
+    private UserActor userActor;
+    private GetAudioTask mGetAudioTask;
 
     private static final Type daoType = DAOSQLite.class;
     private static final String LOG_TAG = "MainActivity";
 
     public View mContentMain;
     private View mProgressView;
-    private MediaService mMediaService = null;
+    private MediaService mMediaService;
     private ListView mMusicList;
+    private MediaNotificationManager mMediaNotificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,6 +174,27 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_quit) {
+            userActor = null;
+            //noinspection ConstantConditions
+            DAOFactory.create(getApplicationContext(), daoType)
+                    .deleteUserActor();
+            mMediaService.release();
+            mMediaNotificationManager.stop();
+            login();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     private void play_item(int position) {
         MusicItem item = (MusicItem)mMusicList.getAdapter().getItem(position);
@@ -194,26 +220,6 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
                 .setOnUIUpdateListener(this)
                 .execute();
     }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_quit) {
-            userActor = null;
-            //noinspection ConstantConditions
-            DAOFactory.create(getApplicationContext(), daoType)
-                    .deleteUserActor();
-            mMediaService.release();
-            login();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     private void loadAudioList() {
         showProgress(true);
@@ -225,6 +231,8 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
     public void updateUI() {
         if (mMusicList != null)
             ((BrowseAdapter) mMusicList.getAdapter()).notifyDataSetChanged();
+        if (mMediaNotificationManager != null)
+            mMediaNotificationManager.start();
     }
 
     @Override
@@ -237,6 +245,29 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
         if (! mMediaService.setMusicItem(adapter.getItem(position)))
             DialogFactory.createAlertDialog(getString(R.string.error_title), "Ошибка воспроизведения аудиозаписи",
                     DialogFactory.BUTTONS_OK, MainActivity.this).show();
+    }
+
+    @Override
+    public void playPreviousItem(MusicItem item) {
+        if (mMusicList == null)
+            return;
+        BrowseAdapter adapter = (BrowseAdapter) mMusicList.getAdapter();
+        int position = adapter.getPosition(item) == 0 ? adapter.getCount() : adapter.getPosition(item);
+        if (! mMediaService.setMusicItem(adapter.getItem(position - 1)))
+            DialogFactory.createAlertDialog(getString(R.string.error_title), "Ошибка воспроизведения аудиозаписи",
+                    DialogFactory.BUTTONS_OK, MainActivity.this).show();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        Log.i(LOG_TAG, "onDestroy");
+        mMediaNotificationManager.stop();
+        mMediaNotificationManager = null;
+        mMediaService.release();
+        mMediaService = null;
+        super.onDestroy();
+        finish();
     }
 
     private class GetAudioTask extends AsyncTask<Void, Void, Boolean> {
@@ -275,6 +306,9 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
                 mMediaService = new MediaService((AudioManager)getSystemService(Context.AUDIO_SERVICE));
                 mMediaService.setOnUIUpdateListener(MainActivity.this);
                 mMediaService.setOnPlayNextItem(MainActivity.this);
+                mMediaService.setOnPlayPreviousItem(MainActivity.this);
+                mMediaNotificationManager = new MediaNotificationManager(MainActivity.this, mMediaService,
+                        (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
                 // устанавливем обработчик нажатия
                 mMusicList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
