@@ -8,6 +8,7 @@ import site.kuzja.vkmusic.MediaNotificationManager;
 import site.kuzja.vkmusic.R;
 import site.kuzja.vkmusic.interfaces.OnPlayNextItem;
 import site.kuzja.vkmusic.interfaces.OnPlayPreviousItem;
+import site.kuzja.vkmusic.interfaces.OnProgressUpdateListener;
 import site.kuzja.vkmusic.interfaces.OnUIUpdateListener;
 import site.kuzja.vkmusic.api.VkApi;
 import site.kuzja.vkmusic.api.exceptions.ApiException;
@@ -44,7 +45,7 @@ import android.widget.ListView;
 import java.lang.reflect.Type;
 
 public class MainActivity extends AppCompatActivity implements OnUIUpdateListener,
-        OnPlayNextItem, OnPlayPreviousItem {
+        OnPlayNextItem, OnPlayPreviousItem, OnProgressUpdateListener {
     private UserActor userActor;
     private GetAudioTask mGetAudioTask;
 
@@ -217,7 +218,7 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
             return;
 
         new DownloadFileFromURL(item)
-                .setOnUIUpdateListener(this)
+                .setOnProgressUpdateListener(this)
                 .execute();
     }
 
@@ -262,12 +263,22 @@ public class MainActivity extends AppCompatActivity implements OnUIUpdateListene
     @Override
     protected void onDestroy() {
         Log.i(LOG_TAG, "onDestroy");
-        mMediaNotificationManager.stop();
-        mMediaNotificationManager = null;
-        mMediaService.release();
-        mMediaService = null;
+        if (mMediaNotificationManager != null) {
+            mMediaNotificationManager.stop();
+            mMediaNotificationManager = null;
+        }
+        if (mMediaService != null) {
+            mMediaService.release();
+            mMediaService = null;
+        }
         super.onDestroy();
         finish();
+    }
+
+    @Override
+    public void progressUpdate() {
+        if (mMusicList != null)
+            ((BrowseAdapter) mMusicList.getAdapter()).notifyDataSetChanged();
     }
 
     private class GetAudioTask extends AsyncTask<Void, Void, Boolean> {

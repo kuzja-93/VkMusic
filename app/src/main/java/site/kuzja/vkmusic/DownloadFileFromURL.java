@@ -12,6 +12,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import site.kuzja.vkmusic.Media.MusicItem;
+import site.kuzja.vkmusic.interfaces.OnProgressUpdateListener;
 import site.kuzja.vkmusic.interfaces.OnUIUpdateListener;
 
 /**
@@ -20,14 +21,14 @@ import site.kuzja.vkmusic.interfaces.OnUIUpdateListener;
 
 public class DownloadFileFromURL extends AsyncTask<Void, Integer, Boolean> {
     private MusicItem item;
-    private OnUIUpdateListener onUIUpdateListener;
+    private OnProgressUpdateListener onProgressUpdateListener;
     private static final String LOG_TAG = "DownloadFileFromURL";
     public DownloadFileFromURL(MusicItem item) {
         this.item = item;
     }
 
-    public DownloadFileFromURL setOnUIUpdateListener(OnUIUpdateListener onUIUpdateListener) {
-        this.onUIUpdateListener = onUIUpdateListener;
+    public DownloadFileFromURL setOnProgressUpdateListener(OnProgressUpdateListener onProgressUpdateListener) {
+        this.onProgressUpdateListener = onProgressUpdateListener;
         return this;
     }
 
@@ -35,8 +36,8 @@ public class DownloadFileFromURL extends AsyncTask<Void, Integer, Boolean> {
     protected void onPreExecute() {
         super.onPreExecute();
         item.setDownloadingStatus(MusicItem.DOWNLOADING);
-        if (onUIUpdateListener != null)
-            onUIUpdateListener.updateUI();
+        if (onProgressUpdateListener != null)
+            onProgressUpdateListener.progressUpdate();
     }
 
     @Override
@@ -82,8 +83,8 @@ public class DownloadFileFromURL extends AsyncTask<Void, Integer, Boolean> {
 
     protected void onProgressUpdate(Integer... progress) {
         item.setDownloadingProgress(progress[0]);
-        if (onUIUpdateListener != null)
-            onUIUpdateListener.updateUI();
+        if (onProgressUpdateListener != null)
+            onProgressUpdateListener.progressUpdate();
     }
 
     @Override
@@ -95,9 +96,8 @@ public class DownloadFileFromURL extends AsyncTask<Void, Integer, Boolean> {
             Log.i(LOG_TAG, String.format("Незагружен файл: %s",item.getFileName()));
             item.setDownloadingStatus(MusicItem.NOT_DOWNLOADED);
         }
-        if (onUIUpdateListener != null) {
-            Log.i(LOG_TAG, "Обновляем интерфейс");
-            onUIUpdateListener.updateUI();
+        if (onProgressUpdateListener != null) {
+            onProgressUpdateListener.progressUpdate();
         }
     }
 
